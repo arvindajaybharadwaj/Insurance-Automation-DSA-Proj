@@ -82,6 +82,68 @@ void inorder(BST *root)
 
 bool remove (BST *root)
 {
-    
+    printf("Enter the id of the person you want to remove:");
+    int id;
+    scanf("%d",&id);
+    BST *temp=root;
+    if(root==NULL)
+    {
+        printf("There is nothing there to remove\n");
+        return false;
+    }
+    while (temp!=NULL)
+    {
+        if(temp->Id==id)
+        {
+            printf("Found the element!\n");
+            printf("Deleting the element from the list\n");
+            
+            
+            if(temp->left == NULL && temp->right == NULL)
+            {
+                free(temp);
+                return true;
+            }
+           
+            else if(temp->left == NULL)
+            {
+                BST *tempRight = temp->right;
+                free(temp);
+                temp = tempRight;
+                return true;
+            }
+            
+            else if(temp->right == NULL)
+            {
+                BST *tempLeft = temp->left;
+                free(temp);
+                temp = tempLeft;
+                return true;
+            }
+            
+            else
+            {
+                BST *successor = temp->right;
+                while(successor->left != NULL)
+                {
+                    successor = successor->left;
+                }
+                temp->Id = successor->Id;
+                
+                free(successor);
+                return true;
+            }
+        }
+        else if(id < temp->Id)
+        {
+            temp = temp->left;
+        }
+        else
+        {
+            temp = temp->right;
+        }
+    }
+    printf("Element not found\n");
+    return false;
 };
 
