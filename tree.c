@@ -1,149 +1,134 @@
-/* The following functions needs to be implemented 
-1. delete 
-2.  all the types of display
-3. adding
-*/
-#include<stdbool.h>
-#include<stdio.h>
-#include"tree.h"
-#include<stdlib.h>
+#include "tree.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <string.h>
 
-
-BST * create_node()
+BST *create_node()
 {
-    BST *new=malloc(sizeof(BST));
-    if(new==NULL)
+    BST *new = (BST *)malloc(sizeof(BST));
+    if (new == NULL)
     {
-        printf("Memory could not be allocated\n");
+        printf("Memory could not be allocated!\n");
         exit(0);
     }
+    printf("Enter Your Name: ");
+    scanf("%s", new->name);
+    printf("Enter Your Age: ");
+    scanf("%d", &new->age);
+    printf("Enter Your ID: ");
+    scanf("%d", &new->Id);
+    printf("Enter your Phone Number: ");
+    scanf("%d", &new->phonenumber);
+    printf("Enter Your Email ID: ");
+    scanf("%s", new->email);
+
+    new->left = new->right = NULL;
     return new;
+}
 
-};
-
-bool add(BST *root)
+bool addBST(BST **root)
 {
-    BST *temp=create_node();
-    printf("Enter Your  Name:");
-    scanf("%s",&temp->name);
-    printf("Enter Your Age:");
-    scanf("%d",&temp->age);
-    printf("Enter Your ID:");
-    scanf("%d",&temp->Id);
-    printf("Enter your Phone Number:");
-    scanf("%d",&temp->phone_number);
-    printf("Enter Your Email ID:");
-    scanf("%s",&temp->email);
-    BST *loop=root;
-    BST *parent = NULL;
-
-    while(loop != NULL)
+    BST *temp = create_node();
+    if (!*root)
+    {
+        *root = temp;
+        return true;
+    }
+    BST *loop = *root, *parent = NULL;
+    while (loop)
     {
         parent = loop;
-        if(temp->Id < loop->Id)
-        {
+        if (temp->Id < loop->Id)
             loop = loop->left;
-        }
-        else if(temp->Id > loop->Id)
-        {
+        else if (temp->Id > loop->Id)
             loop = loop->right;
-        }
-        else if(temp->Id == loop->Id)
+        else
         {
             free(temp);
-            printf("The Value of ID already exists!");
+            printf("The Value of ID already exists!\n");
             return false;
         }
     }
-
-    if(temp->Id < parent->Id)
-    {
+    if (temp->Id < parent->Id)
         parent->left = temp;
+    else
+        parent->right = temp;
+    return true;
+}
+
+void inorderBST(BST *root)
+{
+    if (root)
+    {
+        inorderBST(root->left);
+        printf("Name: %s\n", root->name);
+        printf("Age: %d\n", root->age);
+        printf("Id: %d\n", root->Id);
+        printf("Phone Number: %d\n", root->phonenumber);
+        printf("Email: %s\n", root->email);
+        printf("-------------------------------------------\n");
+        inorderBST(root->right);
+    }
+}
+
+bool removeBST(BST **root, int id)
+{
+    BST *temp = *root, *parent = NULL;
+    while (temp && temp->Id != id)
+    {
+        parent = temp;
+        if (id < temp->Id)
+            temp = temp->left;
+        else
+            temp = temp->right;
+    }
+    if (!temp)
+    {
+        printf("Element not found!\n");
+        return false;
+    }
+
+    if (!temp->left && !temp->right)
+    {
+        if (!parent)
+            *root = NULL;
+        else if (parent->left == temp)
+            parent->left = NULL;
+        else
+            parent->right = NULL;
+        free(temp);
+    }
+    else if (!temp->left || !temp->right)
+    {
+        BST *child = temp->left ? temp->left : temp->right;
+        if (!parent)
+            *root = child;
+        else if (parent->left == temp)
+            parent->left = child;
+        else
+            parent->right = child;
+        free(temp);
     }
     else
     {
-        parent->right = temp;
-    }
-    
-    return true;
-};
-void inorder(BST *root)
-{
-    BST* temp=root;
-    inorder(temp->left);
-    printf("Name is %s\n",temp->name);
-    printf("Age is %d\n",temp->age);
-    printf("Id is %d",temp->Id);
-    printf("Phone Number is %d",temp->phone_number);
-    printf("Email is %d",temp->email);
-    inorder(temp->right);
-
-};
-
-bool remove (BST *root)
-{
-    printf("Enter the id of the person you want to remove:");
-    int id;
-    scanf("%d",&id);
-    BST *temp=root;
-    if(root==NULL)
-    {
-        printf("There is nothing there to remove\n");
-        return false;
-    }
-    while (temp!=NULL)
-    {
-        if(temp->Id==id)
+        BST *succParent = temp, *succ = temp->right;
+        while (succ->left)
         {
-            printf("Found the element!\n");
-            printf("Deleting the element from the list\n");
-            
-            
-            if(temp->left == NULL && temp->right == NULL)
-            {
-                free(temp);
-                return true;
-            }
-           
-            else if(temp->left == NULL)
-            {
-                BST *tempRight = temp->right;
-                free(temp);
-                temp = tempRight;
-                return true;
-            }
-            
-            else if(temp->right == NULL)
-            {
-                BST *tempLeft = temp->left;
-                free(temp);
-                temp = tempLeft;
-                return true;
-            }
-            
-            else
-            {
-                BST *successor = temp->right;
-                while(successor->left != NULL)
-                {
-                    successor = successor->left;
-                }
-                temp->Id = successor->Id;
-                
-                free(successor);
-                return true;
-            }
+            succParent = succ;
+            succ = succ->left;
         }
-        else if(id < temp->Id)
-        {
-            temp = temp->left;
-        }
+        temp->Id = succ->Id;
+        strcpy(temp->name, succ->name);
+        temp->age = succ->age;
+        temp->phonenumber = succ->phonenumber;
+        strcpy(temp->email, succ->email);
+        if (succParent->left == succ)
+            succParent->left = succ->right;
         else
-        {
-            temp = temp->right;
-        }
+            succParent->right = succ->right;
+        free(succ);
     }
-    printf("Element not found\n");
-    return false;
-};
-
+    printf("Element deleted!\n");
+    return true;
+}

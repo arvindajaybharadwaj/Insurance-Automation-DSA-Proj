@@ -1,12 +1,11 @@
 #ifndef POLICY_H
 #define POLICY_H
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-// Policy structure
-struct Policy {
+struct Policy
+{
     int policyId;
     char policyType[20];
     float premium;
@@ -16,28 +15,22 @@ struct Policy {
     float remainingCoverage;
     struct Policy *next;
 };
+typedef struct Policy Policy;
 
-// Client structure
-struct Client {
+struct Client
+{
     int clientId;
     char fullName[50];
-    struct Policy *policies;
+    Policy *policies;
     struct Client *left;
     struct Client *right;
 };
+typedef struct Client Client;
 
-// Function declarations
-struct Policy* makePolicy(int policyId, char policyKind[], float premiumAmt, int years, 
-                          char policyStatus[], float totalCover, float coverLeft);
-
-struct Client* findClient(struct Client* root, int clientId);
-
-void attachPolicyToClient(struct Client* clientNode, struct Policy* policyNode);
-
-void insertPolicyToClientTree(struct Client* root, int clientId, int policyId, 
-                              char kind[], float premiumAmt, int years, char status[], 
-                              float totalCover, float coverLeft);
-
-void printPolicies(struct Policy* head);
+Policy *makePolicy(int policyId, char *policyKind, float premiumAmt, int years, char *policyStatus, float totalCover, float coverLeft);
+Client *findClient(Client *root, int clientId);
+void attachPolicyToClient(Client *clientNode, Policy *policyNode);
+void insertPolicyToClientTree(Client *root, int clientId, int policyId, char *kind, float premiumAmt, int years, char *status, float totalCover, float coverLeft);
+void printPolicies(Policy *head);
 
 #endif

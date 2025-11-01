@@ -1,22 +1,19 @@
+#ifndef TREE_H
+#define TREE_H
+#include <stdbool.h>
 
-//the bst is based on their id
 typedef struct tree
 {
     char name[400];
     int Id;
     int age;
-    int phone_number;
+    int phonenumber;
     char email[500];
-    struct tree *left;
-    struct tree *right;
-}BST;
+    struct tree *left, *right;
+} BST;
 
-bool add(BST *);
+bool addBST(BST **root);
+void inorderBST(BST *root);
+bool removeBST(BST **root, int id);
 
-void inorder(BST *);
-
-bool remove (BST *);
-
-
-
-
+#endif

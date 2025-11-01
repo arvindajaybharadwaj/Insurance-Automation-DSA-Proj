@@ -1,82 +1,81 @@
 #include "policy.h"
 
-struct Policy* makePolicy(int policyId, char policyKind[], float premiumAmt, int years, 
-                          char policyStatus[], float totalCover, float coverLeft)
+Policy *makePolicy(int policyId, char *policyKind, float premiumAmt, int years, char *policyStatus, float totalCover, float coverLeft)
 {
-    struct Policy* newPolicy = (struct Policy*)malloc(sizeof(struct Policy));
-    if (newPolicy == NULL) {
+    Policy *newPolicy = (Policy *)malloc(sizeof(Policy));
+    if (newPolicy == NULL)
+    {
         printf("Memory allocation failed\n");
         return NULL;
     }
-
-    newPolicy->policyID = policyId;
+    newPolicy->policyId = policyId;
     strcpy(newPolicy->policyType, policyKind);
     newPolicy->premium = premiumAmt;
     newPolicy->duration = years;
     strcpy(newPolicy->status, policyStatus);
-    newPolicy->maxCoverage = totalCover;
+    newPolicy->totalCoverage = totalCover;
     newPolicy->remainingCoverage = coverLeft;
     newPolicy->next = NULL;
-
     return newPolicy;
 }
 
-struct Client* findClient(struct Client* root, int clientId)
+Client *findClient(Client *root, int clientId)
 {
-    if (root == NULL)
+    if (!root)
         return NULL;
-
-    if (clientId == root->customerID)
+    if (clientId == root->clientId)
         return root;
-    else if (clientId < root->customerID)
+    else if (clientId < root->clientId)
         return findClient(root->left, clientId);
     else
         return findClient(root->right, clientId);
 }
 
-void attachPolicyToClient(struct Client* clientNode, struct Policy* policyNode)
+void attachPolicyToClient(Client *clientNode, Policy *policyNode)
 {
-    if (clientNode == NULL || policyNode == NULL)
+    if (!clientNode || !policyNode)
         return;
-
-    if (clientNode->policyList == NULL) {
-        clientNode->policyList = policyNode;
-    } else {
-        struct Policy* current = clientNode->policyList;
-        while (current->next != NULL)
+    if (!clientNode->policies)
+        clientNode->policies = policyNode;
+    else
+    {
+        Policy *current = clientNode->policies;
+        while (current->next)
             current = current->next;
         current->next = policyNode;
     }
 }
 
-void insertPolicyToClientTree(struct Client* root, int clientId, int policyId, 
-                              char kind[], float premiumAmt, int years, char status[], 
-                              float totalCover, float coverLeft)
+void insertPolicyToClientTree(Client *root, int clientId, int policyId, char *kind, float premiumAmt, int years, char *status, float totalCover, float coverLeft)
 {
-    struct Client* targetClient = findClient(root, clientId);
-    if (targetClient == NULL) {
+    Client *targetClient = findClient(root, clientId);
+    if (!targetClient)
+    {
         printf("Client with ID %d not found\n", clientId);
         return;
     }
-
-    struct Policy* newPolicy = makePolicy(policyId, kind, premiumAmt, years, status, totalCover, coverLeft);
-    attachPolicyToClient(targetClient, newPolicy);
-    printf("Policy %d successfully added to Client %d\n", policyId, clientId);
+    Policy *newPolicy = makePolicy(policyId, kind, premiumAmt, years, status, totalCover, coverLeft);
+    if (newPolicy)
+    {
+        attachPolicyToClient(targetClient, newPolicy);
+        printf("Policy %d successfully added to Client %d\n", policyId, clientId);
+    }
 }
 
-void printPolicies(struct Policy* head)
+void printPolicies(Policy *head)
 {
-    if (head == NULL) {
+    if (!head)
+    {
         printf("No policies to display\n");
         return;
     }
-
-    struct Policy* current = head;
-    while (current != NULL) {
+    Policy *current = head;
+    while (current)
+    {
         printf("Policy ID: %d | Type: %s | Premium: %.2f | Duration: %d years | Status: %s\n",
-               current->policyID, current->policyType, current->premium, current->duration, current->status);
-        printf("Total Coverage: %.2f | Remaining Coverage: %.2f\n", 
-               current->maxCoverage, current->remainingCoverage);
+               current->policyId, current->policyType, current->premium, current->duration, current->status);
+        printf("Total Coverage: %.2f | Remaining Coverage: %.2f\n",
+               current->totalCoverage, current->remainingCoverage);
         printf("-------------------------------------------\n");
         current = current->next;
     }
