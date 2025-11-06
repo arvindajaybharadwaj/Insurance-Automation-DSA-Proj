@@ -48,8 +48,21 @@ void handleClaim(Policy *policy)
         return;
     float claimAmount;
     printf("Enter claim amount for Policy ID %d: ", policy->policyId);
+
+    if (strcmp(policy->status, "cancelled") == 0)
+    {
+        printf("Cannot claim! The policy has been cancelled.\n");
+        return;
+    }
+
+    if (strcmp(policy->status, "exhausted") == 0)
+    {
+        printf("Cannot claim! The policy has been exhausted.\n");
+        return;
+    }
+
     scanf("%f", &claimAmount);
-    if (claimAmount <= policy->remainingCoverage)
+    if (claimAmount <= policy->remainingCoverage && claimAmount >= 0)
     {
         policy->remainingCoverage -= claimAmount;
         printf("Claim successful. Remaining coverage: %.2f\n", policy->remainingCoverage);
