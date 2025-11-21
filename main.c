@@ -29,7 +29,13 @@ int main()
         printf("8. Display request queue\n");
         printf("0. Exit\n");
         printf("Enter your choice: ");
-        scanf("%d", &choice);
+        if (scanf("%d", &choice) != 1)
+        {
+            printf("Invalid input! Please enter a number.\n");
+            while (getchar() != '\n')
+                ;
+            continue;
+        }
 
         if (choice == 0)
         {
@@ -41,7 +47,6 @@ int main()
         {
         case 1:
         {
-            // Register new client to both BSTs (basic/clientInfo)
             if (addBST(&clientRoot))
             {
                 printf("Client added to basic BST.\n");
