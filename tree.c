@@ -14,14 +14,61 @@ BST *create_node()
     }
     printf("Enter Your Name: ");
     scanf("%s", new->name);
-    printf("Enter Your Age: ");
-    scanf("%d", &new->age);
+
+    // Validate Age
+    while (1)
+    {
+        printf("Enter Your Age (integer): ");
+        if (scanf("%d", &new->age) != 1)
+        {
+            printf("Invalid input! Please enter a valid number.\n");
+            while (getchar() != '\n')
+                ;
+            continue;
+        }
+        if (new->age < 18 || new->age > 120)
+        {
+            printf("Age must be between 18 and 120.\n");
+            continue;
+        }
+        break;
+    }
+
     printf("Enter Your ID: ");
     scanf("%d", &new->Id);
-    printf("Enter your Phone Number: ");
-    scanf("%lld", &new->phonenumber);
-    printf("Enter Your Email ID: ");
-    scanf("%s", new->email);
+
+    // Validate Phone Number
+    while (1)
+    {
+        printf("Enter your Phone Number (10 digits): ");
+        if (scanf("%lld", &new->phonenumber) != 1)
+        {
+            printf("Invalid input! Please enter a valid number.\n");
+            while (getchar() != '\n')
+                ;
+            continue;
+        }
+        if (new->phonenumber < 1000000000LL || new->phonenumber > 9999999999LL)
+        {
+            printf("Phone number must be exactly 10 digits.\n");
+            continue;
+        }
+        break;
+    }
+
+    // Validate Email
+    while (1)
+    {
+        printf("Enter Your Email ID: ");
+        scanf("%s", new->email);
+        char *atSign = strchr(new->email, '@');
+        char *dot = strchr(new->email, '.');
+        if (atSign != NULL && dot != NULL && atSign < dot && strlen(new->email) > 5)
+        {
+            break;
+        }
+        printf("Invalid email format! Email must contain '@' and '.' with valid structure.\n");
+    }
 
     new->left = new->right = NULL;
     return new;
