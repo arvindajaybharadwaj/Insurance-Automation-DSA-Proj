@@ -12,7 +12,7 @@ typedef struct tree
     struct tree *left, *right;
 } BST;
 
-bool addBST(BST **root);
+BST *addBST(BST **root);
 void inorderBST(BST *root);
 bool removeBST(BST **root, int id);
 

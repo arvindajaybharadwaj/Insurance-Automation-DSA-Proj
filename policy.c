@@ -1,6 +1,6 @@
 #include "policy.h"
 
-Policy *makePolicy(int policyId, char *policyKind, float premiumAmt, int years, char *policyStatus, float totalCover, float coverLeft)
+Policy *makePolicy(int policyId, char *policyCode, char *policyKind, float premiumAmt, int years, char *policyStatus, float totalCover, float coverLeft)
 {
     Policy *newPolicy = (Policy *)malloc(sizeof(Policy));
     if (newPolicy == NULL)
@@ -9,6 +9,9 @@ Policy *makePolicy(int policyId, char *policyKind, float premiumAmt, int years, 
         return NULL;
     }
     newPolicy->policyId = policyId;
+    if (policyCode)
+        strncpy(newPolicy->policyCode, policyCode, sizeof(newPolicy->policyCode) - 1);
+    newPolicy->policyCode[sizeof(newPolicy->policyCode) - 1] = '\0';
     strcpy(newPolicy->policyType, policyKind);
     newPolicy->premium = premiumAmt;
     newPolicy->duration = years;
@@ -46,7 +49,7 @@ void attachPolicyToClient(Client *clientNode, Policy *policyNode)
     }
 }
 
-void insertPolicyToClientTree(Client *root, int clientId, int policyId, char *kind, float premiumAmt, int years, char *status, float totalCover, float coverLeft)
+void insertPolicyToClientTree(Client *root, int clientId, int policyId, char *policyCode, char *kind, float premiumAmt, int years, char *status, float totalCover, float coverLeft)
 {
     Client *targetClient = findClient(root, clientId);
     if (!targetClient)
@@ -54,11 +57,11 @@ void insertPolicyToClientTree(Client *root, int clientId, int policyId, char *ki
         printf("Client with ID %d not found\n", clientId);
         return;
     }
-    Policy *newPolicy = makePolicy(policyId, kind, premiumAmt, years, status, totalCover, coverLeft);
+    Policy *newPolicy = makePolicy(policyId, policyCode, kind, premiumAmt, years, status, totalCover, coverLeft);
     if (newPolicy)
     {
         attachPolicyToClient(targetClient, newPolicy);
-        printf("Policy %d successfully added to Client %d\n", policyId, clientId);
+        printf("Policy %s (numeric id: %d) successfully added to Client %d\n", newPolicy->policyCode, policyId, clientId);
     }
 }
 
@@ -72,8 +75,8 @@ void printPolicies(Policy *head)
     Policy *current = head;
     while (current)
     {
-        printf("Policy ID: %d | Type: %s | Premium: %.2f | Duration: %d years | Status: %s\n",
-               current->policyId, current->policyType, current->premium, current->duration, current->status);
+        printf("Policy Code: %s | Numeric ID: %d | Type: %s | Premium: %.2f | Duration: %d years | Status: %s\n",
+               current->policyCode, current->policyId, current->policyType, current->premium, current->duration, current->status);
         printf("Total Coverage: %.2f | Remaining Coverage: %.2f\n",
                current->totalCoverage, current->remainingCoverage);
         printf("-------------------------------------------\n");

@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <ctype.h>
 
 // All headers for modular files
 #include "tree.h"        // BST for client basic info
@@ -47,15 +48,14 @@ int main()
         {
         case 1:
         {
-            if (addBST(&clientRoot))
+            BST *inserted = addBST(&clientRoot);
+            if (inserted)
             {
                 printf("Client added to basic BST.\n");
 
-                // Find the newly added node and extract its ID and name
-                BST *lastAdded = clientRoot;
-                int newClientId = lastAdded->Id;
+                int newClientId = inserted->Id;
                 char newClientName[400];
-                strcpy(newClientName, lastAdded->name);
+                strcpy(newClientName, inserted->name);
 
                 struct Client *newClient = (struct Client *)malloc(sizeof(struct Client));
                 newClient->clientId = newClientId;
@@ -76,13 +76,19 @@ int main()
                     {
                         printf("Client ID already exists in info BST!\n");
                         free(newClient);
-                        goto skipInsertClient;
+                        break;
                     }
                 }
-                *cur = newClient;
-                printf("Client added to info BST.\n");
+                if (!*cur)
+                {
+                    *cur = newClient;
+                    printf("Client added to info BST.\n");
+                }
             }
-        skipInsertClient:
+            else
+            {
+                // addBST already printed duplicate message
+            }
             break;
         }
         case 2:
@@ -104,29 +110,92 @@ int main()
         }
         case 4:
         {
-            int clientId, policyId, years;
-            char policyType[20], status[20];
+            int clientId, years;
+            char policyType[20];
             float premium, totalCover, leftCover;
             printf("Enter client ID for policy: ");
             scanf("%d", &clientId);
-            printf("Enter new policy ID: ");
-            scanf("%d", &policyId);
-            printf("Enter policy type: ");
-            scanf("%s", policyType);
-            getchar();
+
+            struct Client *client = findClient(clientInfoRoot, clientId);
+            if (!client)
+            {
+                printf("Client with ID %d not found.\n", clientId);
+                break;
+            }
+
+            // Determine next numeric policyId for this client
+            int nextPolicyId = 1;
+            Policy *pcur = client->policies;
+            while (pcur)
+            {
+                if (pcur->policyId >= nextPolicyId)
+                    nextPolicyId = pcur->policyId + 1;
+                pcur = pcur->next;
+            }
+
+            // Generate a short prefix from client name (letters only, lowercased)
+            char prefix[8] = {0};
+            int pi = 0;
+            for (int i = 0; client->fullName[i] != '\0' && pi < 6; ++i)
+            {
+                char c = client->fullName[i];
+                if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'))
+                {
+                    if (c >= 'A' && c <= 'Z')
+                        c = c - 'A' + 'a';
+                    prefix[pi++] = c;
+                }
+            }
+            if (pi > 3)
+                prefix[3] = '\0';
+            if (pi == 0)
+                strcpy(prefix, "usr");
+
+            char policyCode[64];
+            snprintf(policyCode, sizeof(policyCode), "%s%d%d", prefix, clientId, nextPolicyId);
+
+            // Prompt for policy type and validate against allowed list
+            const char *allowedTypes[] = {"life", "home", "vehicle"};
+            int typeValid = 0;
+            while (!typeValid)
+            {
+                printf("Enter policy type (life/home/vehicle): ");
+                if (scanf("%19s", policyType) != 1)
+                {
+                    while (getchar() != '\n')
+                        ;
+                    continue;
+                }
+                char lower[20];
+                int i;
+                for (i = 0; policyType[i] && i < (int)sizeof(lower) - 1; ++i)
+                    lower[i] = (char)tolower((unsigned char)policyType[i]);
+                lower[i] = '\0';
+
+                for (int j = 0; j < 3; ++j)
+                {
+                    if (strcmp(lower, allowedTypes[j]) == 0)
+                    {
+                        // normalize stored policyType to lowercase allowed value
+                        strcpy(policyType, allowedTypes[j]);
+                        typeValid = 1;
+                        break;
+                    }
+                }
+                if (!typeValid)
+                    printf("Invalid policy type. Please enter one of: life, home, vehicle.\n");
+            }
             printf("Enter premium amount: ");
             scanf("%f", &premium);
             printf("Enter duration (years): ");
             scanf("%d", &years);
-            printf("Enter status: ");
-            scanf("%s", status);
+            char status[20] = "active";
             getchar();
             printf("Enter total cover amount: ");
             scanf("%f", &totalCover);
-            printf("Enter starting (remaining) cover: ");
-            scanf("%f", &leftCover);
+            leftCover = totalCover;
 
-            insertPolicyToClientTree(clientInfoRoot, clientId, policyId, policyType, premium, years, status, totalCover, leftCover);
+            insertPolicyToClientTree(clientInfoRoot, clientId, nextPolicyId, policyCode, policyType, premium, years, status, totalCover, leftCover);
             break;
         }
         case 5:
@@ -147,11 +216,75 @@ int main()
             char type[20];
             printf("Enter client ID for request: ");
             scanf("%d", &clientId);
+
+            struct Client *clientReq = findClient(clientInfoRoot, clientId);
+            if (!clientReq)
+            {
+                printf("Client with ID %d not found.\n", clientId);
+                break;
+            }
+
+            // Display active and renewed policies for this client
+            Policy *pp = clientReq->policies;
+            int shown = 0;
+            printf("Available policies for client %d:\n", clientId);
+            while (pp)
+            {
+                if (strcmp(pp->status, "active") == 0 || strcmp(pp->status, "renewed") == 0)
+                {
+                    printf("Policy Code: %s | Numeric ID: %d | Type: %s | Status: %s | Remaining: %.2f\n",
+                           pp->policyCode, pp->policyId, pp->policyType, pp->status, pp->remainingCoverage);
+                    shown = 1;
+                }
+                pp = pp->next;
+            }
+            if (!shown)
+            {
+                printf("No active or renewed policies available for client %d.\n", clientId);
+                break;
+            }
+
             printf("Enter policy ID for request: ");
             scanf("%d", &policyId);
-            printf("Enter request type (claim/renewal/cancellation): ");
-            scanf("%s", type);
-            getchar();
+
+            // Validate request type: accept claim / renew / cancel (map to expected strings)
+            int valid = 0;
+            while (!valid)
+            {
+                printf("Enter request type (claim/renew/cancel): ");
+                if (scanf("%19s", type) != 1)
+                {
+                    while (getchar() != '\n')
+                        ;
+                    continue;
+                }
+                char lower[20];
+                int i;
+                for (i = 0; type[i] && i < (int)sizeof(lower) - 1; ++i)
+                    lower[i] = (char)tolower((unsigned char)type[i]);
+                lower[i] = '\0';
+
+                if (strcmp(lower, "claim") == 0)
+                {
+                    strcpy(type, "claim");
+                    valid = 1;
+                }
+                else if (strcmp(lower, "renew") == 0 || strcmp(lower, "renewal") == 0)
+                {
+                    strcpy(type, "renewal");
+                    valid = 1;
+                }
+                else if (strcmp(lower, "cancel") == 0 || strcmp(lower, "cancellation") == 0)
+                {
+                    strcpy(type, "cancellation");
+                    valid = 1;
+                }
+                else
+                {
+                    printf("Invalid request type. Please enter one of: claim, renew, cancel.\n");
+                }
+            }
+
             enqueueRequest(reqQueue, policyId, clientId, type);
             printf("Request enqueued.\n");
             break;

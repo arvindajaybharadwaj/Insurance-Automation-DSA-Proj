@@ -74,13 +74,13 @@ BST *create_node()
     return new;
 }
 
-bool addBST(BST **root)
+BST *addBST(BST **root)
 {
     BST *temp = create_node();
     if (!*root)
     {
         *root = temp;
-        return true;
+        return temp;
     }
     BST *loop = *root, *parent = NULL;
     while (loop)
@@ -94,14 +94,14 @@ bool addBST(BST **root)
         {
             free(temp);
             printf("The Value of ID already exists!\n");
-            return false;
+            return NULL;
         }
     }
     if (temp->Id < parent->Id)
         parent->left = temp;
     else
         parent->right = temp;
-    return true;
+    return temp;
 }
 
 void inorderBST(BST *root)
