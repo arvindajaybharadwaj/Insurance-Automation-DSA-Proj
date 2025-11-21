@@ -19,7 +19,7 @@ BST *create_node()
     printf("Enter Your ID: ");
     scanf("%d", &new->Id);
     printf("Enter your Phone Number: ");
-    scanf("%d", &new->phonenumber);
+    scanf("%lld", &new->phonenumber);
     printf("Enter Your Email ID: ");
     scanf("%s", new->email);
 
@@ -65,7 +65,7 @@ void inorderBST(BST *root)
         printf("Name: %s\n", root->name);
         printf("Age: %d\n", root->age);
         printf("Id: %d\n", root->Id);
-        printf("Phone Number: %d\n", root->phonenumber);
+        printf("Phone Number: %lld\n", root->phonenumber);
         printf("Email: %s\n", root->email);
         printf("-------------------------------------------\n");
         inorderBST(root->right);

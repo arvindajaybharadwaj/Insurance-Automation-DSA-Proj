@@ -7,7 +7,7 @@ typedef struct tree
     char name[400];
     int Id;
     int age;
-    int phonenumber;
+    long long phonenumber;
     char email[500];
     struct tree *left, *right;
 } BST;
