@@ -50,33 +50,38 @@ int main()
             if (addBST(&clientRoot))
             {
                 printf("Client added to basic BST.\n");
-            }
-            struct Client *newClient = (struct Client *)malloc(sizeof(struct Client));
-            printf("Enter client ID: ");
-            scanf("%d", &newClient->clientId);
-            printf("Enter client full name: ");
-            scanf(" %[^\n]", newClient->fullName);
-            newClient->policies = NULL;
-            newClient->left = newClient->right = NULL;
 
-            // Insert client info into second BST
-            struct Client **cur = &clientInfoRoot, *parent = NULL;
-            while (*cur)
-            {
-                parent = *cur;
-                if (newClient->clientId < (*cur)->clientId)
-                    cur = &((*cur)->left);
-                else if (newClient->clientId > (*cur)->clientId)
-                    cur = &((*cur)->right);
-                else
+                // Find the newly added node and extract its ID and name
+                BST *lastAdded = clientRoot;
+                int newClientId = lastAdded->Id;
+                char newClientName[400];
+                strcpy(newClientName, lastAdded->name);
+
+                struct Client *newClient = (struct Client *)malloc(sizeof(struct Client));
+                newClient->clientId = newClientId;
+                strcpy(newClient->fullName, newClientName);
+                newClient->policies = NULL;
+                newClient->left = newClient->right = NULL;
+
+                // Insert client info into second BST
+                struct Client **cur = &clientInfoRoot, *parent = NULL;
+                while (*cur)
                 {
-                    printf("Client ID already exists in info BST!\n");
-                    free(newClient);
-                    goto skipInsertClient;
+                    parent = *cur;
+                    if (newClient->clientId < (*cur)->clientId)
+                        cur = &((*cur)->left);
+                    else if (newClient->clientId > (*cur)->clientId)
+                        cur = &((*cur)->right);
+                    else
+                    {
+                        printf("Client ID already exists in info BST!\n");
+                        free(newClient);
+                        goto skipInsertClient;
+                    }
                 }
+                *cur = newClient;
+                printf("Client added to info BST.\n");
             }
-            *cur = newClient;
-            printf("Client added to info BST.\n");
         skipInsertClient:
             break;
         }
